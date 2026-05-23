@@ -2,4 +2,5 @@
 Repositório compartilhado do Grupo 5 - Miguel, Guilherme, Heitor e Rodrigo
 
 
-dsadsa
+Rodrigo: ok
+Guilherme : ok
