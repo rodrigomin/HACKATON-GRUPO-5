@@ -4,7 +4,7 @@ import { setupAppShell } from "../pages/LoginPage/controller/panelController.js"
 // ===== LOGIN =====
 let currentRole = '';
 
-const dadosSalvos = localStorage.getItem('vitaleite_credentials');
+const dadosSalvos = localStorage.getItem('bancodeleite_credentials');
 
 export const CREDENTIALS = dadosSalvos 
     ? JSON.parse(dadosSalvos)
@@ -27,7 +27,6 @@ export function selectRole(btn, role) {
 }
 
 export function doLogin() {
-  console.log("Tentando login com a role:", currentRole);
   if (!currentRole) {
     alert("Por favor, selecione um perfil antes de entrar.");
     document.getElementById('norole-error').style.display = 'block'
@@ -35,19 +34,24 @@ export function doLogin() {
   } else {
     document.getElementById('norole-error').style.display = 'none'
   }
+
   
   const user = document.getElementById('login-user').value.trim();
   const pass = document.getElementById('login-pass').value.trim();
-  const cred = CREDENTIALS[currentRole];
 
-  for (let i = 0; i <= cred.length; i++) {
-    if (user === cred[i].user && pass === cred[i].pass) {
+  const cred = CREDENTIALS
+
+  for (let i = 0; i < cred[currentRole].length; i++) {
+    if (user === cred[currentRole][i].user && pass === cred[currentRole][i].pass) {
       document.getElementById('login-page').style.display = 'none';
       document.getElementById('app-shell').style.display = 'block';
+      console.log('tem')
       setupAppShell(currentRole, user);
     } else {
+      console.log(user === cred[currentRole][i].user && pass)
       document.getElementById('login-error').style.display = 'block';
     }
+    console.log('vamo porra')
   }
   
 }

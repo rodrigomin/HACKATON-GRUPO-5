@@ -1,4 +1,5 @@
 export function setupAppShell(role, user) {
+    console.log('chegou aqui')
     const avatars = { doador: '🤱', intermediario: '🏥', receptor: '👶' };
     const labels = { doador: 'Doador', intermediario: 'Intermediário', receptor: 'Receptor' };
 
