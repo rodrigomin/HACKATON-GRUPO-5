@@ -3,3 +3,4 @@ Repositório compartilhado do Grupo 5 - Miguel, Guilherme, Heitor e Rodrigo
 
 Rodrigo: ok!
 Guilherme : ok!
+Heitor: ok!
