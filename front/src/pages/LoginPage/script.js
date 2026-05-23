@@ -1,4 +1,8 @@
 import { selectRole, doLogin, doLogout } from './controller/authController.js'
+import { openBatchModal, saveBatch, closeBatchModal, deleteBatch } from './controller/Intermediário/batchController.js';
+import { renderBatches } from './controller/Intermediário/rendersController.js';
+
+import { switchTab } from './controller/Intermediário/tabController.js';
 
 import { setupAppShell, showPanel } from './controller/panelController.js'
 
@@ -9,6 +13,13 @@ import { setupAppShell, showPanel } from './controller/panelController.js'
   window.setupAppShell = setupAppShell;
   window.doLogout = doLogout;
   window.showPanel = showPanel;
+  window.switchTab = switchTab;
+  window.openBatchModal = openBatchModal;
+  window.saveBatch = saveBatch;
+  window.closeBatchModal = closeBatchModal;
+  window.deleteBatch = deleteBatch;
+  window.renderBatches = renderBatches;
+  window.refreshDonorTable = refreshDonorTable;
 
   let currentRole = 'doador';
   let donorForms = JSON.parse(localStorage.getItem('vitaleite_donors') || '[]');
@@ -18,23 +29,6 @@ import { setupAppShell, showPanel } from './controller/panelController.js'
   document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
   document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-
-  
-
-  // ===== TABS =====
-  function switchTab(role, panelKey, btn) {
-    const tabGroup = document.getElementById(role === 'inter' ? 'inter-tabs' : role+'-tabs');
-    tabGroup.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const panelId = `panel-${role}-${panelKey}`;
-    showPanel(panelId);
-
-    if(panelKey === 'respostas') refreshDonorTable();
-    if(panelKey === 'leites') renderBatches();
-    if(panelKey === 'pedidos') renderReceptorRequests();
-    if(panelKey === 'meuspedidos') renderMyRequests();
-  }
 
   // ===== DONOR FORM =====
   document.getElementById('d-exames').addEventListener('change', function(){
@@ -94,7 +88,7 @@ import { setupAppShell, showPanel } from './controller/panelController.js'
   }
 
   // ===== DONOR TABLE =====
-  function refreshDonorTable() {
+  export function refreshDonorTable() {
     donorForms = JSON.parse(localStorage.getItem('vitaleite_donors') || '[]');
     const tbody = document.getElementById('donor-responses-tbody');
     const table = document.getElementById('donor-responses-table');
@@ -140,79 +134,8 @@ import { setupAppShell, showPanel } from './controller/panelController.js'
     refreshDonorTable();
   }
 
-  // ===== MILK BATCHES =====
-  function openBatchModal() {
-    document.getElementById('batch-modal').classList.add('open');
-    // Set defaults
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('b-retirada').value = today;
-    document.getElementById('b-id').value = `LEVA-${Date.now().toString().slice(-6)}`;
-  }
+  
 
-  function closeBatchModal() {
-    document.getElementById('batch-modal').classList.remove('open');
-    ['b-id','b-temp','b-retirada','b-uso','b-local','b-destino'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-  }
-
-  document.getElementById('batch-modal').addEventListener('click', function(e) {
-    if(e.target === this) closeBatchModal();
-  });
-
-  function saveBatch() {
-    const id = document.getElementById('b-id').value.trim();
-    const temp = document.getElementById('b-temp').value;
-    const retirada = document.getElementById('b-retirada').value;
-    const uso = document.getElementById('b-uso').value;
-    const local = document.getElementById('b-local').value.trim();
-    const destino = document.getElementById('b-destino').value.trim();
-
-    if(!id || !temp || !retirada || !local) {
-      alert('Preencha os campos obrigatórios: ID, temperatura, data de retirada e localização.');
-      return;
-    }
-
-    const batch = { id, temp: parseFloat(temp), retirada, uso, local, destino: destino || 'Não definido', createdAt: new Date().toLocaleDateString('pt-BR') };
-    milkBatches.push(batch);
-    localStorage.setItem('vitaleite_batches', JSON.stringify(milkBatches));
-    closeBatchModal();
-    renderBatches();
-  }
-
-  function deleteBatch(i) {
-    if(!confirm('Remover esta leva?')) return;
-    milkBatches.splice(i, 1);
-    localStorage.setItem('vitaleite_batches', JSON.stringify(milkBatches));
-    renderBatches();
-  }
-
-  function renderBatches() {
-    milkBatches = JSON.parse(localStorage.getItem('vitaleite_batches') || '[]');
-    const grid = document.getElementById('batches-grid');
-
-    if(milkBatches.length === 0) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🧊</div><h3>Nenhuma leva registrada</h3><p>Clique em "Nova Leva" para adicionar um registro de leite recebido.</p></div>`;
-      return;
-    }
-
-    grid.innerHTML = milkBatches.map((b, i) => `
-      <div class="batch-card">
-        <span class="batch-id">${b.id}</span>
-        <div class="batch-temp">${b.temp}°<span>C</span></div>
-        <div class="batch-info-row">
-          <div class="batch-info-item"><span>📍 Localização</span><strong>${b.local}</strong></div>
-          <div class="batch-info-item"><span>🗓️ Retirada</span><strong>${b.retirada ? new Date(b.retirada+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</strong></div>
-          <div class="batch-info-item"><span>⏳ Validade / Uso</span><strong>${b.uso ? new Date(b.uso+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</strong></div>
-          <div class="batch-info-item"><span>👶 Destinado a</span><strong>${b.destino}</strong></div>
-        </div>
-        <div class="batch-card-footer">
-          <span style="font-size:0.78rem;color:var(--gray)">Registrado em ${b.createdAt}</span>
-          <button class="btn-delete-batch" onclick="deleteBatch(${i})">✕ Remover</button>
-        </div>
-      </div>
-    `).join('');
-  }
 
   // ===== RECEPTOR REQUESTS =====
   function submitReceptorRequest() {
@@ -249,57 +172,13 @@ import { setupAppShell, showPanel } from './controller/panelController.js'
     });
   }
 
-  function renderReceptorRequests() {
-    receptorRequests = JSON.parse(localStorage.getItem('vitaleite_receptor_requests') || '[]');
-    const list = document.getElementById('receptor-requests-list');
-
-    if(receptorRequests.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="es-icon">📤</div><h3>Nenhum pedido recebido</h3><p>Quando receptores enviarem solicitações, elas aparecerão aqui para análise.</p></div>`;
-      return;
-    }
-
-    list.innerHTML = receptorRequests.map((r, i) => `
-      <div class="request-card">
-        <div>
-          <div class="req-name">${r.nome}</div>
-          <div class="req-details">CPF: ${r.cpf} &nbsp;·&nbsp; Tel: ${r.telefone} &nbsp;·&nbsp; Nasc.: ${r.dataNasc ? new Date(r.dataNasc+'T12:00:00').toLocaleDateString('pt-BR') : '—'} &nbsp;·&nbsp; Enviado: ${r.timestamp}</div>
-          ${r.obs ? `<div class="req-details" style="margin-top:4px;font-style:italic">"${r.obs}"</div>` : ''}
-        </div>
-        <div class="req-actions">
-          ${r.status === 'Pendente' ? `
-            <button class="btn-approve" onclick="handleRequest(${i},'Aprovado')">✓ Aprovar</button>
-            <button class="btn-deny" onclick="handleRequest(${i},'Negado')">✕ Negar</button>
-          ` : `<span class="tag ${r.status === 'Aprovado' ? 'tag-enviado' : 'tag-nao'}">${r.status}</span>`}
-        </div>
-      </div>
-    `).join('');
-  }
-
   function handleRequest(i, status) {
     receptorRequests[i].status = status;
     localStorage.setItem('vitaleite_receptor_requests', JSON.stringify(receptorRequests));
     renderReceptorRequests();
   }
 
-  function renderMyRequests() {
-    receptorRequests = JSON.parse(localStorage.getItem('vitaleite_receptor_requests') || '[]');
-    const list = document.getElementById('my-requests-list');
-
-    if(receptorRequests.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="es-icon">📋</div><h3>Nenhum pedido enviado</h3><p>Seus pedidos enviados aparecerão aqui.</p></div>`;
-      return;
-    }
-
-    list.innerHTML = receptorRequests.map(r => `
-      <div class="request-card">
-        <div>
-          <div class="req-name">Pedido #${r.id.toString().slice(-4)}</div>
-          <div class="req-details">Enviado em ${r.timestamp}</div>
-        </div>
-        <span class="tag ${r.status === 'Aprovado' ? 'tag-enviado' : r.status === 'Negado' ? 'tag-nao' : 'tag-pendente'}">${r.status}</span>
-      </div>
-    `).join('');
-  }
+  
 
   // CPF mask
   document.getElementById('r-cpf').addEventListener('input', function() {

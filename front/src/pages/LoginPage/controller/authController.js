@@ -1,3 +1,7 @@
+window.onload = () => {
+    console.log('chegou aqui')
+}
+
 // ===== LOGIN =====
 let currentRole = ''
 const CREDENTIALS = {
