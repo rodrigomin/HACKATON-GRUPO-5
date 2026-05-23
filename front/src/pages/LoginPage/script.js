@@ -1,32 +1,32 @@
-import { selectRole, doLogin, doLogout } from './controller/authController.js'
+import { selectRole, doLogin, doLogout } from '../../controller/authController.js'
+import { closeBatchModal, deleteBatch, openBatchModal, renderBatches, saveBatch } from './controller/batchController.js';
+import { approveDoador, clearDonorForm, refreshDonorTable, submitDonorForm } from './controller/donorController.js';
 import { setupAppShell, showPanel } from './controller/panelController.js'
+import { handleRequest, newReceptorRequest } from './controller/receptorController.js';
+import { renderReceptorRequests } from './controller/requestController.js';
+
 
 // ===== STATE =====
-let currentRole = 'doador';
+
 let donorForms = JSON.parse(localStorage.getItem('vitaleite_donors') || '[]');
 let milkBatches = JSON.parse(localStorage.getItem('vitaleite_batches') || '[]');
 let receptorRequests = JSON.parse(localStorage.getItem('vitaleite_receptor_requests') || '[]');
 
-// ===== EXPORT TO WINDOW (make functions globally accessible) =====
-window.selectRole = selectRole;
-window.doLogin = doLogin;
-window.setupAppShell = setupAppShell;
-window.doLogout = doLogout;
-window.showPanel = showPanel;
 
-// ===== TABS =====
-function switchTab(role, panelKey, btn) {
-  const tabGroup = document.getElementById(role === 'inter' ? 'inter-tabs' : role+'-tabs');
-  tabGroup.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+function switchTab(role, panelKey, btn) { /* PRECISA FICAR AQUI */
+    const tabGroup = document.getElementById(role === 'inter' ? 'inter-tabs' : role+'-tabs');
+    if (!tabGroup) return;
+    
+    tabGroup.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 
-  const panelId = `panel-${role}-${panelKey}`;
-  showPanel(panelId);
+    const panelId = `panel-${role}-${panelKey}`;
+    showPanel(panelId);
 
-  if(panelKey === 'respostas') refreshDonorTable();
-  if(panelKey === 'leites') renderBatches();
-  if(panelKey === 'pedidos') renderReceptorRequests();
-  if(panelKey === 'meuspedidos') renderMyRequests();
+    if(panelKey === 'respostas') refreshDonorTable();
+    if(panelKey === 'leites') renderBatches();
+    if(panelKey === 'pedidos') renderReceptorRequests();
+    if(panelKey === 'meuspedidos') renderMyRequests();
 }
 
 // ===== DONOR FORM =====
@@ -35,255 +35,7 @@ function getRadioValue(name) {
   return el ? el.value : 'Não informado';
 }
 
-function clearDonorForm() {
-  ['d-nome','d-datanascimento','d-telefone','d-localizacao','d-doenca','d-medicamento'].forEach(id => {
-    const element = document.getElementById(id);
-    if(element) element.value = '';
-  });
-  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-  const fileInput = document.getElementById('d-exames');
-  if(fileInput) fileInput.value = '';
-  const fileSelected = document.getElementById('files-selected');
-  if(fileSelected) fileSelected.style.display = 'none';
-}
 
-function submitDonorForm() {
-  const nome = document.getElementById('d-nome').value.trim();
-  const data = document.getElementById('d-datanascimento').value;
-  const tel = document.getElementById('d-telefone').value.trim();
-  const local = document.getElementById('d-localizacao').value.trim();
-
-  if(!nome || !data || !tel || !local) {
-    alert('Por favor, preencha todos os campos obrigatórios (*).');
-    return;
-  }
-
-  const entry = {
-    id: Date.now(),
-    nome,
-    dataNasc: data,
-    telefone: tel,
-    localizacao: local,
-    doenca: document.getElementById('d-doenca').value.trim() || 'Nenhuma',
-    medicamento: document.getElementById('d-medicamento').value.trim() || 'Nenhum',
-    alcool: getRadioValue('alcool'),
-    amamenta: getRadioValue('amamenta'),
-    exames: document.getElementById('d-exames').files.length > 0 ? `${document.getElementById('d-exames').files.length} arquivo(s)` : 'Nenhum',
-    status: 'Pendente',
-    timestamp: new Date().toLocaleDateString('pt-BR')
-  };
-
-  donorForms.push(entry);
-  localStorage.setItem('vitaleite_donors', JSON.stringify(donorForms));
-
-  document.getElementById('donor-form-card').style.display = 'none';
-  document.getElementById('donor-success-state').style.display = 'block';
-}
-
-// ===== DONOR TABLE =====
-function refreshDonorTable() {
-  donorForms = JSON.parse(localStorage.getItem('vitaleite_donors') || '[]');
-  const tbody = document.getElementById('donor-responses-tbody');
-  const table = document.getElementById('donor-responses-table');
-  const empty = document.getElementById('donor-empty-state');
-
-  document.getElementById('stat-total').textContent = donorForms.length;
-  document.getElementById('stat-pendentes').textContent = donorForms.filter(d=>d.status==='Pendente').length;
-  document.getElementById('stat-aprovados').textContent = donorForms.filter(d=>d.status==='Aprovado').length;
-
-  if(donorForms.length === 0) {
-    table.style.display = 'none';
-    empty.style.display = 'block';
-    return;
-  }
-
-  empty.style.display = 'none';
-  table.style.display = 'table';
-  tbody.innerHTML = '';
-
-  donorForms.forEach((d, i) => {
-    const statusTag = d.status === 'Aprovado' ? 'tag-sim' : 'tag-pendente';
-    tbody.innerHTML += `
-      <tr>
-        <td><strong>${d.nome}</strong></td>
-        <td>${d.dataNasc ? new Date(d.dataNasc+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</td>
-        <td>${d.localizacao}</td>
-        <td>${d.telefone}</td>
-        <td>${d.doenca.length > 30 ? d.doenca.substring(0,30)+'...' : d.doenca}</td>
-        <td>${d.medicamento.length > 25 ? d.medicamento.substring(0,25)+'...' : d.medicamento}</td>
-        <td>${d.alcool}</td>
-        <td>${d.exames}</td>
-        <td>
-          <span class="tag ${statusTag}">${d.status}</span>
-          ${d.status === 'Pendente' ? `<button style="margin-left:6px;background:var(--success);color:white;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:0.75rem;font-family:'DM Sans',sans-serif" onclick="approveDoador(${i})">✓</button>` : ''}
-        </td>
-      </tr>`;
-  });
-}
-
-function approveDoador(i) {
-  donorForms[i].status = 'Aprovado';
-  localStorage.setItem('vitaleite_donors', JSON.stringify(donorForms));
-  refreshDonorTable();
-}
-
-// ===== MILK BATCHES =====
-function openBatchModal() {
-  document.getElementById('batch-modal').classList.add('open');
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('b-retirada').value = today;
-  document.getElementById('b-id').value = `LEVA-${Date.now().toString().slice(-6)}`;
-}
-
-function closeBatchModal() {
-  document.getElementById('batch-modal').classList.remove('open');
-  ['b-id','b-temp','b-retirada','b-uso','b-local','b-destino'].forEach(id => {
-    const element = document.getElementById(id);
-    if(element) element.value = '';
-  });
-}
-
-function saveBatch() {
-  const id = document.getElementById('b-id').value.trim();
-  const temp = document.getElementById('b-temp').value;
-  const retirada = document.getElementById('b-retirada').value;
-  const uso = document.getElementById('b-uso').value;
-  const local = document.getElementById('b-local').value.trim();
-  const destino = document.getElementById('b-destino').value.trim();
-
-  if(!id || !temp || !retirada || !local) {
-    alert('Preencha os campos obrigatórios: ID, temperatura, data de retirada e localização.');
-    return;
-  }
-
-  const batch = { id, temp: parseFloat(temp), retirada, uso, local, destino: destino || 'Não definido', createdAt: new Date().toLocaleDateString('pt-BR') };
-  milkBatches.push(batch);
-  localStorage.setItem('vitaleite_batches', JSON.stringify(milkBatches));
-  closeBatchModal();
-  renderBatches();
-}
-
-function deleteBatch(i) {
-  if(!confirm('Remover esta leva?')) return;
-  milkBatches.splice(i, 1);
-  localStorage.setItem('vitaleite_batches', JSON.stringify(milkBatches));
-  renderBatches();
-}
-
-function renderBatches() {
-  milkBatches = JSON.parse(localStorage.getItem('vitaleite_batches') || '[]');
-  const grid = document.getElementById('batches-grid');
-
-  if(milkBatches.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🧊</div><h3>Nenhuma leva registrada</h3><p>Clique em "Nova Leva" para adicionar um registro de leite recebido.</p></div>`;
-    return;
-  }
-
-  grid.innerHTML = milkBatches.map((b, i) => `
-    <div class="batch-card">
-      <span class="batch-id">${b.id}</span>
-      <div class="batch-temp">${b.temp}°<span>C</span></div>
-      <div class="batch-info-row">
-        <div class="batch-info-item"><span>📍 Localização</span><strong>${b.local}</strong></div>
-        <div class="batch-info-item"><span>🗓️ Retirada</span><strong>${b.retirada ? new Date(b.retirada+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</strong></div>
-        <div class="batch-info-item"><span>⏳ Validade / Uso</span><strong>${b.uso ? new Date(b.uso+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</strong></div>
-        <div class="batch-info-item"><span>👶 Destinado a</span><strong>${b.destino}</strong></div>
-      </div>
-      <div class="batch-card-footer">
-        <span style="font-size:0.78rem;color:var(--gray)">Registrado em ${b.createdAt}</span>
-        <button class="btn-delete-batch" onclick="deleteBatch(${i})">✕ Remover</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ===== RECEPTOR REQUESTS =====
-function submitReceptorRequest() {
-  const nome = document.getElementById('r-nome').value.trim();
-  const data = document.getElementById('r-data').value;
-  const cpf = document.getElementById('r-cpf').value.trim();
-  const tel = document.getElementById('r-telefone').value.trim();
-
-  if(!nome || !data || !cpf || !tel) {
-    alert('Por favor, preencha todos os campos obrigatórios.');
-    return;
-  }
-
-  const req = {
-    id: Date.now(),
-    nome, dataNasc: data, cpf, telefone: tel,
-    obs: document.getElementById('r-obs').value.trim(),
-    status: 'Pendente',
-    timestamp: new Date().toLocaleDateString('pt-BR')
-  };
-
-  receptorRequests.push(req);
-  localStorage.setItem('vitaleite_receptor_requests', JSON.stringify(receptorRequests));
-
-  document.getElementById('receptor-form-card').style.display = 'none';
-  document.getElementById('receptor-success-state').style.display = 'block';
-}
-
-function newReceptorRequest() {
-  document.getElementById('receptor-form-card').style.display = 'block';
-  document.getElementById('receptor-success-state').style.display = 'none';
-  ['r-nome','r-data','r-cpf','r-telefone','r-obs'].forEach(id => {
-    const element = document.getElementById(id);
-    if(element) element.value = '';
-  });
-}
-
-function renderReceptorRequests() {
-  receptorRequests = JSON.parse(localStorage.getItem('vitaleite_receptor_requests') || '[]');
-  const list = document.getElementById('receptor-requests-list');
-
-  if(receptorRequests.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="es-icon">📤</div><h3>Nenhum pedido recebido</h3><p>Quando receptores enviarem solicitações, elas aparecerão aqui para análise.</p></div>`;
-    return;
-  }
-
-  list.innerHTML = receptorRequests.map((r, i) => `
-    <div class="request-card">
-      <div>
-        <div class="req-name">${r.nome}</div>
-        <div class="req-details">CPF: ${r.cpf} &nbsp;·&nbsp; Tel: ${r.telefone} &nbsp;·&nbsp; Nasc.: ${r.dataNasc ? new Date(r.dataNasc+'T12:00:00').toLocaleDateString('pt-BR') : '—'} &nbsp;·&nbsp; Enviado: ${r.timestamp}</div>
-        ${r.obs ? `<div class="req-details" style="margin-top:4px;font-style:italic">"${r.obs}"</div>` : ''}
-      </div>
-      <div class="req-actions">
-        ${r.status === 'Pendente' ? `
-          <button class="btn-approve" onclick="handleRequest(${i},'Aprovado')">✓ Aprovar</button>
-          <button class="btn-deny" onclick="handleRequest(${i},'Negado')">✕ Negar</button>
-        ` : `<span class="tag ${r.status === 'Aprovado' ? 'tag-enviado' : 'tag-nao'}">${r.status}</span>`}
-      </div>
-    </div>
-  `).join('');
-}
-
-function handleRequest(i, status) {
-  receptorRequests[i].status = status;
-  localStorage.setItem('vitaleite_receptor_requests', JSON.stringify(receptorRequests));
-  renderReceptorRequests();
-}
-
-function renderMyRequests() {
-  receptorRequests = JSON.parse(localStorage.getItem('vitaleite_receptor_requests') || '[]');
-  const list = document.getElementById('my-requests-list');
-
-  if(receptorRequests.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="es-icon">📋</div><h3>Nenhum pedido enviado</h3><p>Seus pedidos enviados aparecerão aqui.</p></div>`;
-    return;
-  }
-
-  list.innerHTML = receptorRequests.map(r => `
-    <div class="request-card">
-      <div>
-        <div class="req-name">Pedido #${r.id.toString().slice(-4)}</div>
-        <div class="req-details">Enviado em ${r.timestamp}</div>
-      </div>
-      <span class="tag ${r.status === 'Aprovado' ? 'tag-enviado' : r.status === 'Negado' ? 'tag-nao' : 'tag-pendente'}">${r.status}</span>
-    </div>
-  `).join('');
-}
 
 // ===== DOM INITIALIZATION (when DOM is ready) =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -329,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== EXPORT ALL FUNCTIONS TO WINDOW =====
 window.switchTab = switchTab;
+window.selectRole = selectRole;
 window.getRadioValue = getRadioValue;
 window.clearDonorForm = clearDonorForm;
 window.submitDonorForm = submitDonorForm;
@@ -339,8 +92,10 @@ window.closeBatchModal = closeBatchModal;
 window.saveBatch = saveBatch;
 window.deleteBatch = deleteBatch;
 window.renderBatches = renderBatches;
-window.submitReceptorRequest = submitReceptorRequest;
+window.submitReceptorRequest = submitDonorForm;
 window.newReceptorRequest = newReceptorRequest;
 window.renderReceptorRequests = renderReceptorRequests;
 window.handleRequest = handleRequest;
-window.renderMyRequests = renderMyRequests;
+window.renderMyRequests = renderBatches;
+window.doLogin = doLogin;
+window.doLogout = doLogout;

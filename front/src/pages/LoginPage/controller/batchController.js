@@ -1,4 +1,7 @@
 // ===== MILK BATCHES =====
+
+let milkBatches = JSON.parse(localStorage.getItem('vitaleite_batches') || '[]');
+
 export function openBatchModal() {
     document.getElementById('batch-modal').classList.add('open');
     // Set defaults
@@ -46,3 +49,30 @@ export function deleteBatch(i) {
   }
 
 
+
+export function renderBatches() {
+  milkBatches = JSON.parse(localStorage.getItem('vitaleite_batches') || '[]');
+  const grid = document.getElementById('batches-grid');
+
+  if(milkBatches.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🧊</div><h3>Nenhuma leva registrada</h3><p>Clique em "Nova Leva" para adicionar um registro de leite recebido.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = milkBatches.map((b, i) => `
+    <div class="batch-card">
+      <span class="batch-id">${b.id}</span>
+      <div class="batch-temp">${b.temp}°<span>C</span></div>
+      <div class="batch-info-row">
+        <div class="batch-info-item"><span>📍 Localização</span><strong>${b.local}</strong></div>
+        <div class="batch-info-item"><span>🗓️ Retirada</span><strong>${b.retirada ? new Date(b.retirada+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</strong></div>
+        <div class="batch-info-item"><span>⏳ Validade / Uso</span><strong>${b.uso ? new Date(b.uso+'T12:00:00').toLocaleDateString('pt-BR') : '—'}</strong></div>
+        <div class="batch-info-item"><span>👶 Destinado a</span><strong>${b.destino}</strong></div>
+      </div>
+      <div class="batch-card-footer">
+        <span style="font-size:0.78rem;color:var(--gray)">Registrado em ${b.createdAt}</span>
+        <button class="btn-delete-batch" onclick="deleteBatch(${i})">✕ Remover</button>
+      </div>
+    </div>
+  `).join('');
+}
