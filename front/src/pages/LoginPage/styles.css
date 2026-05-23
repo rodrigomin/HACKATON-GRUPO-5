@@ -4,14 +4,14 @@
     --rose: #FF6B9D;
     --rose-light: #FF8FBE;
     --rose-pale: #FF6B9D;
-    --dark-bg: #0F0F1E;
-    --dark-card: #1A1A2E;
-    --dark-lighter: #2a2a3e;
-    --text-light: #E5E5E5;
+    --dark-bg: #ffffff;
+    --dark-card: #f8ebfb;
+    --dark-lighter: #fcf8fd;
+    --text-light: #696969;
     --text-lighter: #B0B0B0;
     --success: #10B981;
     --warning: #F59E0B;
-    --border-dark: #333333;
+    --border-dark: #e6e6e6;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -137,7 +137,7 @@
   }
 
   .role-btn {
-    border: 2px solid #333333;
+    border: 2px solid #d7d7d7;
     background: var(--dark-lighter);
     border-radius: 14px;
     padding: 14px 10px;
@@ -171,7 +171,7 @@
   .form-input {
     width: 100%;
     padding: 14px 16px;
-    border: 2px solid #333333;
+    border: 2px solid #d7d7d7;
     border-radius: 12px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.95rem;
@@ -227,7 +227,7 @@
     top: 0;
     z-index: 100;
     box-shadow: 0 0 20px rgba(255,107,157,0.2);
-    border-bottom: 1px solid #333333;
+    border-bottom: 1px solid #d7d7d7;
   }
 
   .topbar-logo {
@@ -298,7 +298,7 @@
   /* ===== TABS ===== */
   .tab-nav {
     background: var(--dark-card);
-    border-bottom: 1px solid #333333;
+    border-bottom: 1px solid #d7d7d7;
     display: flex;
     padding: 0 32px;
     gap: 4px;
@@ -357,7 +357,7 @@
   /* ===== DONOR FORM ===== */
   .donor-form-card {
     background: var(--dark-card);
-    border: 1px solid #333333;
+    border: 1px solid #d7d7d7;
     border-radius: 20px;
     padding: 40px;
     box-shadow: 0 0 20px rgba(255,107,157,0.1);
@@ -385,7 +385,7 @@
   .form-group-inner textarea {
     width: 100%;
     padding: 12px 14px;
-    border: 2px solid #333333;
+    border: 2px solid #d7d7d7;
     border-radius: 10px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
@@ -418,7 +418,7 @@
 
   .section-divider {
     border: none;
-    border-top: 1px solid #333333;
+    border-top: 1px solid #d7d7d7;
     margin: 28px 0;
   }
 
@@ -555,7 +555,7 @@
 
   .batch-card {
     background: var(--dark-card);
-    border: 1px solid #333333;
+    border: 1px solid #d7d7d7;
     border-radius: 18px;
     padding: 24px;
     box-shadow: 0 0 15px rgba(255,107,157,0.1);
@@ -606,7 +606,7 @@
 
   .batch-card-footer {
     padding-top: 14px;
-    border-top: 1px solid #333333;
+    border-top: 1px solid #d7d7d7;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -805,7 +805,7 @@
     padding: 80px 20px;
     background: rgba(255,107,157,0.05);
     border-radius: 20px;
-    border: 1px solid #333333;
+    border: 1px solid #d7d7d7;
   }
 
   .submitted-state .ss-icon { font-size: 4rem; margin-bottom: 20px; }
@@ -840,7 +840,7 @@
   .flex {
     display: flex;
   }
-  
+
   .row {
     flex-direction: row;
   }
