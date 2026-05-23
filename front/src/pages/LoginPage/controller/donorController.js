@@ -51,6 +51,10 @@ export function submitDonorForm() {
     return;
   }
 
+
+  /* TRATAMENTO DE INPUTS */ 
+  
+
   const entry = {
     id: Date.now(),
     nome,
