@@ -1,13 +1,402 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banco de Leite</title>
-    <script src="./script.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <title>Banco de Leites — BL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/pages/LoginPage/styles.css">
+    <script type="module" src="src/pages/LoginPage/script.js"></script>
 </head>
 <body>
-    
+
+<!-- ===== LOGIN ===== -->
+<div id="login-page">
+  <div class="login-visual">
+    <img src="/mnt/user-data/uploads/1779552471220_image.png" alt="Laboratório" onerror="this.style.display='none'">
+    <div class="login-visual-overlay">
+      <div class="login-visual-text">
+        <h1>Cuidando de cada <em>gota</em> com amor e ciência.</h1>
+        <p>Plataforma integrada de gestão para bancos de leite humano — conectando doadores, intermediários e receptores.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-form-side">
+    <div class="login-form-container">
+      <div class="login-logo">
+        <div class="logo-icon">🍼</div>
+        <span>Banco de Leites</span>
+      </div>
+
+      <h2>Bem-vindo(a)</h2>
+      <p class="subtitle">Selecione seu perfil e faça login para continuar</p>
+
+      <div class="role-selector">
+        <button class="role-btn" data-role="doador" onclick="selectRole(this, 'doador')">
+          <span class="role-icon">🤱</span>
+          <span class="role-label">Doador</span>
+        </button>
+        <button class="role-btn" data-role="intermediario" onclick="selectRole(this, 'intermediario')">
+          <span class="role-icon">🏥</span>
+          <span class="role-label">Intermediário</span>
+        </button>
+        <button class="role-btn" data-role="receptor" onclick="selectRole(this, 'receptor')">
+          <span class="role-icon">👶</span>
+          <span class="role-label">Receptor</span>
+        </button>
+      </div>
+
+      <div id="login-error" class="error-msg">Usuário ou senha incorretos. Tente novamente.</div>
+
+      <div class="form-group">
+        <label>Usuário</label>
+        <input type="text" class="form-input" id="login-user" placeholder="Digite seu usuário" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" class="form-input" id="login-pass" placeholder="Digite sua senha">
+      </div>
+
+      <button class="btn-primary" onclick="doLogin()">Entrar na plataforma →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div id="app-shell">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="tl-icon">🍼</div>
+      BL
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="user-avatar" id="user-avatar">👤</div>
+        <span id="user-name-display">—</span>
+        <span class="role-badge" id="role-badge-display">—</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- DONOR TABS -->
+  <div class="tab-nav" id="donor-tabs" style="display:none">
+    <button class="tab-btn active" onclick="switchTab('donor','formulario',this)">📋 Formulário de Doação</button>
+  </div>
+
+  <!-- INTERMEDIARIO TABS -->
+  <div class="tab-nav" id="inter-tabs" style="display:none">
+    <button class="tab-btn active" onclick="switchTab('inter','respostas',this)">📥 Respostas dos Doadores</button>
+    <button class="tab-btn" onclick="switchTab('inter','leites',this)">🧊 Registro de Leites</button>
+    <button class="tab-btn" onclick="switchTab('inter','pedidos',this)">📤 Pedidos dos Receptores</button>
+  </div>
+
+  <!-- RECEPTOR TABS -->
+  <div class="tab-nav" id="receptor-tabs" style="display:none">
+    <button class="tab-btn active" onclick="switchTab('receptor','solicitar',this)">📝 Fazer Pedido</button>
+    <button class="tab-btn" onclick="switchTab('receptor','meuspedidos',this)">📋 Meus Pedidos</button>
+  </div>
+
+  <div class="main-content">
+
+    <!-- ============ DONOR PANELS ============ -->
+    <div id="panel-donor-formulario" class="panel active">
+      <div class="panel-header">
+        <h2>Formulário de Doação</h2>
+        <p>Preencha todas as informações abaixo. Os dados serão enviados ao intermediário para análise.</p>
+      </div>
+
+      <div id="donor-success-state" class="submitted-state" style="display:none">
+        <div class="ss-icon">✅</div>
+        <h3>Formulário enviado com sucesso!</h3>
+        <p>Suas informações foram recebidas pelo intermediário. Você será contactada em breve pelo número de telefone informado.</p>
+      </div>
+
+      <div class="donor-form-card" id="donor-form-card">
+        <div class="section-label">Informações Pessoais</div>
+
+        <div class="form-grid">
+          <div class="form-group-inner">
+            <label>Nome Completo *</label>
+            <input type="text" id="d-nome" placeholder="Seu nome completo">
+          </div>
+          <div class="form-group-inner">
+            <label>Data de Nascimento *</label>
+            <input type="date" id="d-datanascimento">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group-inner">
+            <label>Número de Telefone *</label>
+            <input type="tel" id="d-telefone" placeholder="(00) 00000-0000">
+          </div>
+          <div class="form-group-inner">
+            <label>Localização / Cidade *</label>
+            <input type="text" id="d-localizacao" placeholder="Cidade — Estado">
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Saúde e Histórico</div>
+
+        <div class="form-grid single">
+          <div class="form-group-inner">
+            <label>Portadora de alguma doença? Se sim, qual(is)?</label>
+            <textarea id="d-doenca" placeholder="Descreva condições de saúde relevantes, ou escreva 'Nenhuma'"></textarea>
+          </div>
+        </div>
+
+        <div class="form-grid single">
+          <div class="form-group-inner">
+            <label>Usa algum medicamento ou droga atualmente? Se sim, qual(is)?</label>
+            <textarea id="d-medicamento" placeholder="Liste medicamentos em uso, ou escreva 'Nenhum'"></textarea>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group-inner">
+            <label>Faz uso de álcool ou tabaco?</label>
+            <div class="radio-group" style="margin-top:10px">
+              <label class="radio-option"><input type="radio" name="alcool" value="Não"> Não</label>
+              <label class="radio-option"><input type="radio" name="alcool" value="Álcool"> Álcool</label>
+              <label class="radio-option"><input type="radio" name="alcool" value="Tabaco"> Tabaco</label>
+              <label class="radio-option"><input type="radio" name="alcool" value="Ambos"> Ambos</label>
+            </div>
+          </div>
+          <div class="form-group-inner">
+            <label>Está amamentando atualmente?</label>
+            <div class="radio-group" style="margin-top:10px">
+              <label class="radio-option"><input type="radio" name="amamenta" value="Sim"> Sim</label>
+              <label class="radio-option"><input type="radio" name="amamenta" value="Não"> Não</label>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Exames Médicos</div>
+
+        <div class="form-group-inner">
+          <label>Enviar fotos dos exames médicos (opcional)</label>
+          <label class="file-upload-area" for="d-exames">
+            <div class="upload-icon">📎</div>
+            <p>Clique para selecionar arquivos de exames (JPG, PNG, PDF)</p>
+            <p style="font-size:0.78rem;margin-top:4px;color:#9CA3AF">Máx. 10 MB por arquivo</p>
+            <input type="file" id="d-exames" multiple accept="image/*,.pdf">
+          </label>
+          <p id="files-selected" style="font-size:0.82rem;color:var(--success);margin-top:8px;display:none"></p>
+        </div>
+
+        <div class="form-submit-row">
+          <button class="btn-secondary" onclick="clearDonorForm()">Limpar</button>
+          <button class="btn-submit" onclick="submitDonorForm()">Enviar para o Intermediário →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ INTERMEDIARIO PANELS ============ -->
+    <div id="panel-inter-respostas" class="panel" style="display:none">
+      <div class="panel-header">
+        <h2>Respostas dos Doadores</h2>
+        <p>Formulários recebidos dos doadores cadastrados na plataforma.</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total Recebido</div>
+          <div class="stat-value stat-accent" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pendentes</div>
+          <div class="stat-value" id="stat-pendentes">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Aprovados</div>
+          <div class="stat-value" id="stat-aprovados">0</div>
+        </div>
+      </div>
+
+      <div class="table-wrapper" id="donor-responses-wrapper">
+        <div class="empty-state" id="donor-empty-state">
+          <div class="es-icon">📭</div>
+          <h3>Nenhum formulário recebido</h3>
+          <p>Quando doadores enviarem seus formulários, eles aparecerão aqui.</p>
+        </div>
+        <table class="data-table" id="donor-responses-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Nome Completo</th>
+              <th>Nasc.</th>
+              <th>Localização</th>
+              <th>Telefone</th>
+              <th>Doença</th>
+              <th>Medicamento</th>
+              <th>Álcool/Tab.</th>
+              <th>Exames</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="donor-responses-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="panel-inter-leites" class="panel" style="display:none">
+      <div class="panel-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h2>Registro de Leites</h2>
+          <p>Gerencie cada leva de leite recebida — temperatura, destino e rastreabilidade.</p>
+        </div>
+        <button class="add-batch-btn" onclick="openBatchModal()">
+          + Nova Leva
+        </button>
+      </div>
+
+      <div class="batches-grid" id="batches-grid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="es-icon">🧊</div>
+          <h3>Nenhuma leva registrada</h3>
+          <p>Clique em "Nova Leva" para adicionar um registro de leite recebido.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-inter-pedidos" class="panel" style="display:none">
+      <div class="panel-header">
+        <h2>Pedidos dos Receptores</h2>
+        <p>Solicitações recebidas de famílias e unidades de saúde aguardando atendimento.</p>
+      </div>
+
+      <div class="receptor-requests-list" id="receptor-requests-list">
+        <div class="empty-state">
+          <div class="es-icon">📤</div>
+          <h3>Nenhum pedido recebido</h3>
+          <p>Quando receptores enviarem solicitações, elas aparecerão aqui para análise.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ RECEPTOR PANELS ============ -->
+    <div id="panel-receptor-solicitar" class="panel" style="display:none">
+      <div class="panel-header">
+        <h2>Solicitar Leite</h2>
+        <p>Preencha o formulário abaixo para encaminhar seu pedido ao banco de leite.</p>
+      </div>
+
+      <div id="receptor-success-state" style="display:none" class="submitted-state">
+        <div class="ss-icon">📬</div>
+        <h3>Pedido enviado!</h3>
+        <p>Sua solicitação foi recebida pelo intermediário e está em análise. Você será contactado pelo telefone informado.</p>
+        <button class="btn-submit" style="margin-top:28px" onclick="newReceptorRequest()">Fazer outro pedido</button>
+      </div>
+
+      <div class="rf-card" id="receptor-form-card">
+        <h3>Dados do Solicitante</h3>
+        <p class="rf-sub">Todas as informações são confidenciais e utilizadas somente para o processo de doação.</p>
+
+        <div class="form-grid">
+          <div class="form-group-inner">
+            <label>Nome Completo *</label>
+            <input type="text" id="r-nome" placeholder="Nome completo do responsável">
+          </div>
+          <div class="form-group-inner">
+            <label>Data de Nascimento *</label>
+            <input type="date" id="r-data">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group-inner">
+            <label>CPF *</label>
+            <input type="text" id="r-cpf" placeholder="000.000.000-00" maxlength="14">
+          </div>
+          <div class="form-group-inner">
+            <label>Número de Telefone *</label>
+            <input type="tel" id="r-telefone" placeholder="(00) 00000-0000">
+          </div>
+        </div>
+
+        <div class="form-grid single">
+          <div class="form-group-inner">
+            <label>Observações / Motivo da solicitação</label>
+            <textarea id="r-obs" placeholder="Informe o motivo do pedido, dados do bebê, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="form-submit-row">
+          <button class="btn-submit" onclick="submitReceptorRequest()">Enviar Pedido →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-receptor-meuspedidos" class="panel" style="display:none">
+      <div class="panel-header">
+        <h2>Meus Pedidos</h2>
+        <p>Histórico de solicitações enviadas ao banco de leite.</p>
+      </div>
+      <div id="my-requests-list" class="receptor-requests-list">
+        <div class="empty-state">
+          <div class="es-icon">📋</div>
+          <h3>Nenhum pedido enviado</h3>
+          <p>Seus pedidos enviados aparecerão aqui.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<!-- ===== BATCH MODAL ===== -->
+<div class="modal-overlay" id="batch-modal">
+  <div class="modal-box">
+    <h3>Nova Leva de Leite</h3>
+    <p class="modal-sub">Registre os dados da leva recebida. Cada bloco representa uma remessa de leite.</p>
+
+    <div class="form-grid">
+      <div class="form-group-inner">
+        <label>Identificador / Código da Leva</label>
+        <input type="text" id="b-id" placeholder="Ex: LEVA-2024-001">
+      </div>
+      <div class="form-group-inner">
+        <label>Temperatura (°C)</label>
+        <input type="number" id="b-temp" placeholder="-18" step="0.1">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group-inner">
+        <label>Data de Retirada</label>
+        <input type="date" id="b-retirada">
+      </div>
+      <div class="form-group-inner">
+        <label>Data de Uso / Validade</label>
+        <input type="date" id="b-uso">
+      </div>
+    </div>
+
+    <div class="form-grid single">
+      <div class="form-group-inner">
+        <label>Localização Atual</label>
+        <input type="text" id="b-local" placeholder="Ex: Freezer A — Prateleira 2">
+      </div>
+    </div>
+
+    <div class="form-grid single">
+      <div class="form-group-inner">
+        <label>Destinado a (Receptor / Instituição)</label>
+        <input type="text" id="b-destino" placeholder="Nome do receptor ou instituição">
+      </div>
+    </div>
+
+    <div class="form-submit-row">
+      <button class="btn-secondary" onclick="closeBatchModal()">Cancelar</button>
+      <button class="btn-submit" onclick="saveBatch()">Salvar Leva</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

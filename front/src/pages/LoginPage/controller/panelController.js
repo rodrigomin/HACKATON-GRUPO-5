@@ -17,15 +17,17 @@ export function setupAppShell(role, user) {
       showPanel('panel-donor-formulario');
     } else if(role === 'intermediario') {
       showPanel('panel-inter-respostas');
-      refreshDonorTable();
+      // Call refreshDonorTable if it exists
+      if(typeof window.refreshDonorTable === 'function') {
+        window.refreshDonorTable();
+      }
     } else if(role === 'receptor') {
       showPanel('panel-receptor-solicitar');
     }
-
-  }
+}
 
 export function showPanel(id) {
     document.querySelectorAll('.panel').forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
     const panel = document.getElementById(id);
     if(panel) { panel.style.display = 'block'; panel.classList.add('active'); }
-  }
+}
