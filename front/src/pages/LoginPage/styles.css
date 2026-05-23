@@ -90,7 +90,7 @@
     max-width: 420px;
   }
 
-  .login-logo {
+  .login-logo { 
     display: flex;
     align-items: center;
     gap: 10px;
@@ -833,6 +833,22 @@
     margin-bottom: 6px;
   }
 
+  a {
+    color: rgb(109, 109, 255);
+  }
+
+  .flex {
+    display: flex;
+  }
+  
+  .row {
+    flex-direction: row;
+  }
+
+  .center {
+    align-items: center;
+    justify-content: center;
+  }
   .rf-card .rf-sub { color: var(--gray); font-size: 0.9rem; margin-bottom: 28px; }
 
   @media (max-width: 768px) {

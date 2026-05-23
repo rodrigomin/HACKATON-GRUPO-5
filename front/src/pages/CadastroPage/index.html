@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar — Banco de Leites</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="script.js" defer></script>
+</head>
+<body>
+  <div class="register-page">
+    <div class="register-card">
+      <div class="logo">🍼 Banco de Leites</div>
+      <h2>Crie sua conta</h2>
+    
+      <div id="register-error" class="error-msg">As senhas não coincidem. </div>
+      <form id="register-form">
+        <label>Usuário</label>
+        <input type="text" id="reg-username" name="user" placeholder="Escolha um nome de usuário" required autocomplete="off">
+
+        <label>Senha</label>
+        <input type="password" id="reg-password" name="password" placeholder="Senha" required>
+
+        <label>Confirmar senha</label>
+        <input type="password" id="reg-password-confirm" name="confirm_password" placeholder="Repita a senha" required>
+
+        <label>Perfil</label>
+        <select name="profile" id="reg-role">
+          <option value="doador">Doadora</option>
+          <option value="intermediario">Receptora</option>
+        </select>
+
+        <label>Código admin (opcional — necessário para criar Intermediária)</label>
+        <input type="text" id="reg-admin-code" name="adm-code" placeholder="Se você for admin, insira o código">
+
+        <div class="hint">Registro de Intermediária só possível com código admin válido.</div>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary" id="registrar">Registrar</button>
+          <a class="btn-link" href="../LoginPage/login.html">Voltar ao login</a>
+        </div>
+
+        <div id="reg-message" class="message"></div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
