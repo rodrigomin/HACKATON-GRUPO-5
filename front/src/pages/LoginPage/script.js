@@ -1,83 +1,25 @@
-import { selectRole, doLogin } from './controller/authController'
+import { selectRole, doLogin, doLogout } from './controller/authController.js'
+
+import { setupAppShell, showPanel } from './controller/panelController.js'
 
 
 // ===== STATE =====
+  window.selectRole = selectRole;
+  window.doLogin = doLogin;
+  window.setupAppShell = setupAppShell;
+  window.doLogout = doLogout;
+  window.showPanel = showPanel;
+
   let currentRole = 'doador';
   let donorForms = JSON.parse(localStorage.getItem('vitaleite_donors') || '[]');
   let milkBatches = JSON.parse(localStorage.getItem('vitaleite_batches') || '[]');
   let receptorRequests = JSON.parse(localStorage.getItem('vitaleite_receptor_requests') || '[]');
 
-  const CREDENTIALS = {
-    doador: { user: 'Doador', pass: 'Doador123' },
-    intermediario: { user: 'Intermediario', pass: 'Intermediario123' },
-    receptor: { user: 'Receptor', pass: 'Receptor123' }
-  };
-
-  // ===== LOGIN =====
-  function selectRole(btn, role) {
-    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentRole = role;
-    document.getElementById('login-user').value = '';
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-error').style.display = 'none';
-  }
-
-  function doLogin() {
-    const user = document.getElementById('login-user').value.trim();
-    const pass = document.getElementById('login-pass').value.trim();
-    const cred = CREDENTIALS[currentRole];
-
-    if (user === cred.user && pass === cred.pass) {
-      document.getElementById('login-page').style.display = 'none';
-      document.getElementById('app-shell').style.display = 'block';
-      setupAppShell(currentRole, user);
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
-  }
-
   document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
   document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-  function setupAppShell(role, user) {
-    const avatars = { doador: '🤱', intermediario: '🏥', receptor: '👶' };
-    const labels = { doador: 'Doador', intermediario: 'Intermediário', receptor: 'Receptor' };
 
-    document.getElementById('user-avatar').textContent = avatars[role];
-    document.getElementById('user-name-display').textContent = user;
-    document.getElementById('role-badge-display').textContent = labels[role];
-
-    document.getElementById('donor-tabs').style.display = role === 'doador' ? 'flex' : 'none';
-    document.getElementById('inter-tabs').style.display = role === 'intermediario' ? 'flex' : 'none';
-    document.getElementById('receptor-tabs').style.display = role === 'receptor' ? 'flex' : 'none';
-
-    // Show first panel
-    document.querySelectorAll('.panel').forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
-
-    if(role === 'doador') {
-      showPanel('panel-donor-formulario');
-    } else if(role === 'intermediario') {
-      showPanel('panel-inter-respostas');
-      refreshDonorTable();
-    } else if(role === 'receptor') {
-      showPanel('panel-receptor-solicitar');
-    }
-  }
-
-  function showPanel(id) {
-    document.querySelectorAll('.panel').forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
-    const panel = document.getElementById(id);
-    if(panel) { panel.style.display = 'block'; panel.classList.add('active'); }
-  }
-
-  function doLogout() {
-    document.getElementById('login-page').style.display = 'grid';
-    document.getElementById('app-shell').style.display = 'none';
-    document.getElementById('login-user').value = '';
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-error').style.display = 'none';
-  }
+  
 
   // ===== TABS =====
   function switchTab(role, panelKey, btn) {
